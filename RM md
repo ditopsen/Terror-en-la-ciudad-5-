@@ -1,0 +1,42 @@
+1. Visión General & Estructura NarrativaTítulo: Terreur à CityGénero: Terror Psicológico / Survival Horror / Misterio / Meta-ficciónPerspectiva: Primera persona (Inmersiva)Protagonista: Mathew Logangh (27 años)Capítulos:Prólogo (La Carretera): La transmisión en el vehículo y el aviso sobre la Torre.Capítulo 1 (La Cabaña): Tutorial, exploración inicial, el aviso "NO SUBAS DESPUÉS DE ESCUCHAR LA SEÑAL" y el primer encuentro con los tres golpes (TOC... TOC... TOC...).Capítulo 2 (La Ciudad Muerta): Entorno semiabierto con radios, vehículos abandonados y señales que rompen la cuarta pared.Capítulo 3 (Proyecto A.R.K.): Revelación del centro experimental y el concepto de que las conciencias entran en la señal.Capítulo 4 (El Delirio y Elliot): Geometría no-euclidiana, bucles de mapas, encuentro con Elliot y persecución por parte de Los Despiertos.Capítulo 5 & Final: La verdad sobre las versiones clonadas de Mathew y los tres finales desbloqueables (La Salida, La Señal y El Verdadero Mathew).2. Mecánicas de Juego DetalladasMecánicaDescripción TécnicaRadio y FrecuenciasDial analógico en tiempo real. Utilizado para resolver puzles electromagnéticos, recibir pistas meta-ficticias y actuar como radar de proximidad de enemigos mediante estática.Linterna DinamoBatería con drenaje progresivo. La recarga mecánica genera ruido sonoro dentro del motor de IA, alertando a los enemigos cercanos.Giro 180° y Geometría No-EuclidianaMecánica de rotación rápida de cámara que activa disparadores de mirada (Gaze Triggers), modificando la arquitectura del mapa a espaldas del jugador sin pantallas de carga.IA de "Los Despiertos"Criaturas con estados Idle/Echo, Stalking y Chasing. Al recibir disparos no mueren, sino que se desintegran en estática por 15 segundos y reaparecen en otro punto del mapa.Inventario & GuardadoCuadrícula de 8 espacios en tiempo real (sin pausar el juego). Sistema de guardado manual consumiendo "Casetes Vírgines" en grabadoras de cinta fijas.3. Prompt de Arquitectura de Código (Para OpenCode / Copilot)Dentro de la documentación se incluye el prompt estructurado listo para ser enviado a asistentes de desarrollo de código en C++ o C#:Plaintext================================================================================
+PROMPT DE ARQUITECTURA DE CÓDIGO — TERREUR À CITY (MOTOR: UNREAL ENGINE 5 / C++)
+================================================================================
+
+ROL Y OBJETIVO:
+Actúa como Lead Game Developer y Arquitecto de Engine. Genera las clases completas C++ 
+y headers (.h / .cpp) para el prototipo funcional de "Terreur à City".
+
+SISTEMAS REQUERIDOS:
+
+1. RADIO & ANALOG FREQUENCY SYSTEM (RadioSystem.h / .cpp)
+   - Atributos: float CurrentFrequency, float TargetFrequency, USoundCue* StaticNoiseCue.
+   - Funciones: TuneFrequency(float Delta), CheckPuzzleFrequency(), UpdateEnemyRadar().
+   - Implementar un cálculo de estática proporcional a la proximidad del enemigo más cercano:
+     StaticIntensity = Clamp01(1.0f - (DistanceToClosestEnemy / MaxRadarRadius)).
+
+2. AWAKENED ENEMY AI (AwakenedAIController.h / .cpp)
+   - Estados Enum: EAIAwakenedState { IdleEcho, Stalking, Chasing, StaticDisintegration }.
+   - Mecánica de Desintegración: Al recibir el evento TakeDamage(), deshabilitar Collision 
+     y Visibility, reproducir efecto NIAGARA_StaticDisintegration, iniciar un Timer de 15s 
+     y relocalizar al Pawn en un ATargetPoint aleatorio fuera del frustum de la cámara.
+
+3. GEOMETRÍA NO-EUCLIDIANA Y GAZE TRIGGERS (DeliriumGazeComponent.h / .cpp)
+   - Componente adjunto al Character Player.
+   - Detectar cuando el jugador realiza un Giro Rápido de 180° (Quick Turn Event).
+   - Raycast hacia la parte posterior; si la superficie objetivo tiene la etiqueta 
+     "DynamicGeometryWall", ejecutar SwapLevelGeometry() reemplazando el actor de mapa 
+     A por el actor B instantáneamente sin pantallas de carga.
+
+4. FLASHLIGHT DYNAMO SYSTEM (FlashlightComponent.h / .cpp)
+   - Batería con drenaje delta por segundo.
+   - Función ManualPump(): Incrementa Charge level (+15%), emite un MakeNoiseEvent() 
+     perceptible por la IA en un radio de 1200 unidades.
+
+5. REAL-TIME INVENTORY & SAVE SYSTEM (InventoryManager.h & SaveGameSystem.cpp)
+   - Array estático de 8 slots de UItemObject*.
+   - SaveGameSystem: Serializa Player Transform, Inventory Array, Collected ARK AudioLogs, 
+     y Current Chapter en JSON consumiendo un ítem "VirginTape".
+
+FORMATO DE SALIDA:
+Entrega código limpio, robusto, altamente documentado con estándares de Unreal Engine C++,
+utilizando la gestión adecuada de memoria (UPROPERTY, UFUNCTION) e interfaces.
